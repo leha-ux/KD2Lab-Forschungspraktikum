@@ -1,0 +1,26 @@
+{{ block title }}
+<h1>Auszahlung</h1>
+{{ endblock }}
+{{ block content }}
+<br>
+<br>
+<b>Vielen Dank für Ihre Teilnahme am Experiment!</b>
+
+<br>
+<br>
+Basierend auf Ihren Entscheidungen haben Sie einen Bonus von {{ player.ergebnis}} erreicht. 
+<br>
+Mit Ihrer fixen Auszahlung und Ihrem Bonus haben Sie damit eine Auszahlung von insgesamt {{ player.gesamt}}
+
+<br>
+<br>
+<p>
+Zur <b> Übermittlung Ihrer Bankverbindung </b> das KD²Lab klicken Sie auf den folgenden Link. 
+Bitte geben Sie dort direkt Ihre Bankverbindung ein, damit Ihre Auszahlung auf Ihr Konto überwiesen werden kann. 
+Eine spätere Übermittlung der Daten wird nicht möglich sein.
+Wir werden warten, bis Sie die entsprechenden Eingaben gemacht haben. 
+Bitte schließen Sie daher das Browserfenster des Experiments nicht.
+</p>
+{{ next_button }}
+
+{{ endblock }}

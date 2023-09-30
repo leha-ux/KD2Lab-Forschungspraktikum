@@ -1,0 +1,29 @@
+{% load otree static %}
+
+
+{% block title %} Download-Seite {% endblock %}
+
+{% block content %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<script>
+function downloadZip() {
+  console.log("Download")
+  // prevent the button from submitting the form
+  event.preventDefault();
+  // get the otree static folder path
+  var filePath = "{{ static 'startProgram/startProgram.zip' }}";
+  // make an ajax request to get the zip file
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", filePath, true);
+  xhr.responseType = "blob";
+  xhr.onload = function() {
+    // save the blob as a zip file
+    saveAs(this.response, "InitAssistant");
+  };
+  xhr.send();
+}
+</script>
+
+<button type="button" onclick="downloadZip()">Download</button>
+{{ next_button }}
+{% endblock %}

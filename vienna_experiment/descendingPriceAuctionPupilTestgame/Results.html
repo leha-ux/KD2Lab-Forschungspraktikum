@@ -1,0 +1,80 @@
+{{ block styles }}
+    <link rel="stylesheet" src="{{ static 'otree/css/global.css' }}">
+    <style>
+        /* Custom styles for the results page */
+        h1 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 80%;
+            margin: 0 auto;
+            border-collapse: collapse;
+        }
+
+        td, th {
+            border: 2px solid #707070;
+            padding: 15px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+
+        #endScreen {
+            font-size: 28px; 
+            font-weight: bold;
+            color: green;
+            text-align: center;
+        }
+    </style>
+{{ endblock }}
+
+
+{{ block content }}
+
+<h1>Ergebnis der Beispielrunde</h1>
+
+<p>
+    {{ if player.is_winner }}
+    Sie haben die Auktion gewonnen! Und Ihr Verdienst für diese Runde ist {{player.payoff}}
+    {{ elif player.is_tied }}
+        Unendschieden. Ihr Verdienst ist {{player.payoff}}
+    {{ else }}
+     Sie haben die Auktion nicht gewonnen.
+    {{ endif }}
+</p>
+
+<table>
+    <tr>
+        <th>Ihr Gebot</th>
+        <th>Gebot des Gewinners</th>
+        <th>Wert Ihres Gegenstands</th>
+        <th>Ihre Auszahlung</th>
+        <th>Gesamtgewinn in diesem Abschnitt</th>
+    </tr>
+    <tr>
+        <td>{{ player.bid_amount }}</td>
+        <td>Höchster Wert der Gruppe: {{ player.bid_amount }}</td>
+        <td>{{ player.item_value_actual }}</td>
+        <td> {{ value }}</td>
+        <td> {{ value }}</td>
+    </tr>
+</table>
+
+<p id="endScreen"></p>
+
+
+
+{{ next_button }}
+
+{{ endblock }}

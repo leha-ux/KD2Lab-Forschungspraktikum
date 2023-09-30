@@ -1,0 +1,379 @@
+{{ block styles }}
+    <link rel="stylesheet" src="{{ static 'otree/css/global.css' }}">
+    
+{{ endblock }}
+
+{{ block content }}
+
+<style> .page-header {padding-top:10px; margin-bottom: 10px; }</style>
+
+<div class="game-container" style="top: -10px">
+    
+    <div class="row justify-content-md-center">
+        <!-- Task -->
+        <div id="task-container" class="col-8">
+            <div class="d-flex flex-column align-items-center">
+               <h3>Szenario1</h3> 
+            
+            <div class="d-flex justify-content-center">
+                <div id="wait" style="display: none">
+                    <p>
+                        Warten auf den Mitspieler
+                    </p>
+                        <progress></progress>
+                </div>
+
+               <div id="decide" style="display: none">
+                <div id="results" style="display: none">
+                    <p>
+                        Hier sind die Ergebnisse der letzten Runden
+                    </p>
+                    <table class="table">
+                        <tr>
+                            <th>Spieler</th>
+                            <th>Entscheidung</th>
+                        </tr>
+                        <tr>
+                            <td>Sie</td>
+                            <td id="my-decision"></td>
+                        </tr>
+                        <tr>
+                            <td>Mitspieler</td>
+                            <td id="other-decision"></td>
+                        </tr>
+                    </table>
+                </div>
+            
+                <h5>
+                    Runde {{ subsession.round_number }}
+                     <span id="period"></span>
+                </h5>
+            
+                
+                {{ include_sibling 'instructions.html' }}
+                <div class="d-flex justify-content-center">
+                    
+                    <label>Bitte treffen Sie eine Entscheidung</label>
+                </div>
+                <div class="d-flex justify-content-center">
+                    
+                    
+                        <style> .wide-button { width: 25%; height: 70px; margin: 5px 75px;} </style>
+                        <button id="cooperateButton" type="button" class="btn btn-secondary btn-lg btn-block wide-button" onclick="cooperate()">
+                            Option A
+                        </button> 
+                        <button id="defectButton" type="button" class="btn btn-secondary btn-lg btn-block wide-button" onclick="defect()">
+                            Option B
+                        </button>
+                    
+                </div>
+                <br><br>
+            </div>
+
+            </div>
+        </div>
+        </div>
+        {{ if is_uneven}}
+        <!-- Visualisation of Feedback -->
+        <style>
+            #visualizationAOI {
+              width: 100%;
+              margin-top:40px;
+            }
+          </style>
+        <div id="feedback-container" class="col-4 ">
+            <div class="d-flex flex-column align-items-center">
+                <h3>Blickfeld des Mitspielers</h3>
+
+                    <!-- Create a div element to display the plot -->
+                    <div id="visualizationAOI"></div>
+                        <script src="{{ static 'scripts/cdn.plot.ly_plotly-2.20.0.min.js' }}"></script>
+                        <!-- Get the plot JSON from the player object -->
+                        <script>
+                        var plot_json = {{player.get_plot()|json }};
+
+        
+                        <!-- Use the get_plot function to render the plot -->
+
+                        config = {'displayModeBar': false}
+                        Plotly.setPlotConfig(config)
+                        Plotly.newPlot('visualizationAOI', JSON.parse(plot_json));
+
+
+                        </script>
+                        <script>
+                        
+                         // starten Sie die Funktion
+
+                        </script>
+
+                        
+                    </div> 
+                
+            </div>
+        </div>
+        {{ endif }}
+    </div>
+    </div>
+  </div>
+
+
+
+
+
+<script>
+    document.getElementById('period').style.display = 'none';
+    let waitDiv = document.getElementById('wait');
+    let decideDiv = document.getElementById('decide');
+    let resultsDiv = document.getElementById('results');
+    let input = document.getElementById('input');
+    let playerCells = [
+        document.getElementById('my-decision'),
+        document.getElementById('other-decision')
+    ];
+    if (js_vars.my_id === 2)
+        playerCells.reverse();
+
+    function cooperate() {
+        liveSend({'coop': true});
+    }
+
+    function defect() {
+        liveSend({'coop': false});
+    }
+
+    function show(ele) {
+        for (let div of [waitDiv, decideDiv]) {
+            div.style.display = (div === ele) ? 'block' : 'none';
+        }
+    }
+
+    function showResults(results) {
+        for (let i = 0; i < results.coops.length; i++) {
+            playerCells[i].innerText = results.coops[i] ? 'Cooperate' : 'Defect';
+        }
+        // it's only hidden in the first period
+        resultsDiv.style.display = 'block';
+        resultsDiv.style.backgroundColor = 'lightgreen';
+        setTimeout(function (event) {
+            resultsDiv.style.backgroundColor = '';
+        }, 1000);
+
+    }
+        // Triggers the update of the graph using livemethod every 1000 milisecond
+    function updateGraph() {
+        var participant_id = {{ participant.id_in_session }};
+
+        // Check if the participant ID is uneven -only if thats true, than update Biofeedback every
+        if (participant_id % 2 == 1) {
+            liveSend({'graph': true});
+            
+        }
+        }
+        // Diese Funktion ruft die sayHello-Funktion alle 1000 Millisekunden (1 Sekunde) auf
+        setInterval(function() {
+            updateGraph()
+    
+        }, 1000);
+
+    
+    function liveRecv(data) {
+        
+        if (data.finished_sg) {
+            document.getElementById('form').submit();
+            return;
+        }
+        document.getElementById('period').innerText = data.iteration + 1;
+
+        var participant_id = {{ participant.id_in_session }};
+
+        if (data.graph){
+            // Check if the participant ID is uneven -if so => Update Biofeedback
+            if (participant_id % 2 == 1) {
+                var plot_updated_json = data.graph;
+                
+                Plotly.react('visualizationAOI', JSON.parse(plot_updated_json));
+
+                
+            }
+        }
+        if (!(data.graph)){
+            let is_waiting = data.should_wait;
+            if (is_waiting) {
+                show(waitDiv);
+            } 
+            if (!(is_waiting)) {
+                show(decideDiv);
+            }
+        }
+        
+        if (data.last_results) {
+            showResults(data.last_results);
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function (event) {
+        liveSend({'type': 'load'});
+    });
+</script>
+
+<script>
+    //Determine the position of the payout matrix to map the tobii eye tracking data to the corresponding button
+    window.onload = function () {
+        
+        function posData() {    
+            var screenWidth = screen.width
+            var screenHeight = screen.height
+            // Get the table element by id
+            var table = document.getElementById("matrixTable");
+            // Create an empty dictionary to store the data
+            var data = {};
+            // Create an empty dictionary to store the table data
+            var table_data = {};
+            
+            // Loop through all the rows of the table
+            for (var i = 0; i < table.rows.length; i++) {
+                // Loop through all the cells of the current row
+                for (var j = 0; j < table.rows[i].cells.length; j++) {
+                    // Get the current cell element
+                    var cell = table.rows[i].cells[j];
+                    // Get the cell id, width, height, top and left position
+                    var id = cell.id;
+                    var width = cell.offsetWidth;
+                    var height = cell.offsetHeight;
+                    var top = cell.offsetTop;
+                    var left = cell.offsetLeft;
+                     // Get the position and size of the cell relative to the viewport
+                    var rect = cell.getBoundingClientRect();
+                    // Create an object to store the data for the current cell
+                    var cellData = {
+                    "width": width,
+                    "height": height,
+                    "top": top,
+                    "left": left,
+                    "rectTop": rect.top,
+                    "rectRight": rect.right,
+                    "rectBottom": rect.bottom,
+                    "rectLeft": rect.left,
+                    "rectHeight": rect.height,
+                    "rectWidth": rect.width
+                    };
+                    // Add the object to the dictionary with the cell name as the key
+                    // Use a switch statement to match the id with the name
+                    switch (id) {
+                    case "feldObenLinks":
+                        table_data["Feld oben links"] = cellData;
+                        break;
+                    case "feldObenMitte":
+                        table_data["Feld oben mitte"] = cellData;
+                        break;
+                    case "feldObenRechts":
+                        table_data["Feld oben rechts"] = cellData;
+                        break;
+                    case "feldMitteLinks":
+                        table_data["Feld mitte links"] = cellData;
+                        break;
+                    case "feldMitteMitte":
+                        table_data["Feld mitte mitte"] = cellData;
+                        break;
+                    case "feldMitteRechts":
+                        table_data["Feld mitte rechts"] = cellData;
+                        break;
+                    case "feldUntenLinks":
+                        table_data["Feld unten links"] = cellData;
+                        break;
+                    case "feldUntenMitte":
+                        table_data["Feld unten mitte"] = cellData;
+                        break;
+                    case "feldUntenRechts":
+                        table_data["Feld unten rechts"] = cellData;
+                        break;
+                    default:
+                        console.log("Unbekannte Zelle: " + id);
+                    }
+                }
+            }
+            // Get the button elements by id
+            var buttonCooperate = document.getElementById("cooperateButton");
+            var buttonDefect = document.getElementById("defectButton");
+            // Get the button ids, widths, heights, tops and lefts positions
+            var idCooperate = buttonCooperate.id;
+            var widthCooperate = buttonCooperate.offsetWidth;
+            var heightCooperate = buttonCooperate.offsetHeight;
+            var topCooperate = buttonCooperate.offsetTop;
+            var leftCooperate = buttonCooperate.offsetLeft;
+            var idDefect = buttonDefect.id;
+            var widthDefect = buttonDefect.offsetWidth;
+            var heightDefect = buttonDefect.offsetHeight;
+            var topDefect = buttonDefect.offsetTop;
+            var leftDefect = buttonDefect.offsetLeft;
+            // Get the positions and sizes of the buttons relative to the viewport
+            var rectCooperate = buttonCooperate.getBoundingClientRect();
+            var rectDefect = buttonDefect.getBoundingClientRect();
+            // Create objects to store the data for the buttons
+            var buttonDataCooperate = {
+            "width": widthCooperate,
+            "height": heightCooperate,
+            "top": topCooperate,
+            "left": leftCooperate,
+            "rectTop": rectCooperate.top,
+            "rectRight": rectCooperate.right,
+            "rectBottom": rectCooperate.bottom,
+            "rectLeft": rectCooperate.left,
+            "rectHeight": rectCooperate.height,
+            "rectWidth": rectCooperate.width
+            };
+            var buttonDataDefect = {
+            "width": widthDefect,
+            "height": heightDefect,
+            "top": topDefect,
+            "left": leftDefect,
+            "rectTop": rectDefect.top,
+            "rectRight": rectDefect.right,
+            "rectBottom": rectDefect.bottom,
+            "rectLeft": rectDefect.left,
+            "rectHeight": rectDefect.height,
+            "rectWidth": rectDefect.width
+            };
+            // Add the objects to the dictionary with the button names as the keys
+            table_data["Button cooperate"] = buttonDataCooperate;
+            table_data["Button defect"] = buttonDataDefect;
+
+            // Add screenWidth and screenHeight to data
+            data["screenWidth"] = screenWidth;
+            data["screenHeight"] = screenHeight;
+            // Add table_data to data
+            data["tableData"] = table_data;
+            
+            liveSend({'mappingData': data});
+                
+            
+        }
+        var participant_id = {{ participant.id_in_session }};
+        if (participant_id == 2) {
+            setTimeout(posData,1000)
+            $ ("#matrixTable").ready (function () {
+                posData()
+            });
+        }
+    }
+
+    /*
+    function getCellPosition (cellId) {
+        var cells = document.getElementsByTagName ("td"); // Alle Zellen-Elemente auswählen
+        var cell = cells [cellId - 1]; // Die Zelle mit der entsprechenden ID auswählen
+        var rect = cell.getBoundingClientRect (); // Position und Größe der Zelle bekommen
+        console.log ("Position of " + cellId + ":"); // ID der Zelle ausgeben
+        console.log (rect.top, rect.right, rect.bottom, rect.left); // Werte in der Konsole ausgeben
+      }
+    
+      window.onload = function () {
+        getCellPosition (1); // Position der ersten Zelle ausgeben
+        getCellPosition (2); // Position der zweiten Zelle ausgeben
+        getCellPosition (3); // Position der dritten Zelle ausgeben
+        getCellPosition (4); // Position der vierten Zelle ausgeben
+      };
+      */
+</script>
+
+{{ endblock }}

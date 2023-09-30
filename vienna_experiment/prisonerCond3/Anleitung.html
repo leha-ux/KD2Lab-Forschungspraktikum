@@ -1,0 +1,53 @@
+{{ block title }}
+<h1>Abschnitt 3 von 3 </h1>
+{{ endblock }}
+{{ block content }}
+<br>
+<br>
+<div class="container">
+    <div class="col-md-12">
+        <div class="row">
+
+    {% if player.id_in_group == 2 %}
+    <p>
+        Nun können Sie in Szenario1 nicht mehr sehen, welche Bereiche Ihr Mitspieler während des Entscheidungsprozesses betrachtet. Durchlaufen Sie Szenario1 dreimal mit Ihrem Mitspieler.
+    </p>
+    {% else %}
+    <div class="col-sm">
+        <p>
+            
+            Zuerst durchlaufen Sie Szenario1 dreimal. 
+            <b>Dabei sehen Sie in allen drei Runden kontinuierlich die Bereiche, auf die Ihr Mitspieler 
+            während der Entscheidungsfindung gerade schaut. Ein Beispiel dafür sehen Sie unterhalb des Textes. 
+             </b>
+            <br>
+            <br>
+            
+</div>
+<div class="col-sm">
+    <div class="img-container">
+        <img src="{{ static 'img/Biofeedback.png' }}">
+    </div>
+    <style>
+        .img-container {
+            position: relative;
+
+        }
+        
+        img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%;
+        }
+    </style>
+
+</div>
+    {% endif %}
+    {{ next_button }}
+</div>
+</div>
+</div>    
+
+
+{{ endblock }}

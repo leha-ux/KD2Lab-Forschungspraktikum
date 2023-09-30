@@ -1,0 +1,538 @@
+{{ block styles }}
+  <link rel="stylesheet" src="{{ static 'otree/css/global.css' }}">
+
+{{ endblock }}
+
+{{ block title }} <h1>Beispielrunde Szenario2</h1>{{ endblock }}
+
+{% block head %}
+
+
+{% endblock %}
+
+{% block content %}
+
+
+<div class="game-container" style="margin-top: 30px">
+  <p>
+    Klicken Sie auf die Schaltfläche "Bieten", um auf den Artikel zu bieten.<br>
+    Wenn kein Gebot abgegeben wird, wird automatisch zur nächsten Seite weitergeschaltet.<br>
+    </p>
+  <div class="d-flex justify-content-center">
+
+      <!-- Task -->
+      <div id="task-container" class="col-8">
+          <div class="d-flex flex-column align-items-center">
+             <h3>Szenario2</h3> 
+            <div id="countdown_statement">
+              <strong>Das Bieten beginnt nach 3 Sekunden. </strong>
+            </div>
+
+            <!-- Animation that counts down whole bid -->
+            <div id="animated-timer"></div>
+            <br>
+            <!-- Animation that runs per second -->
+            <div id="second-timer" style="height:280px; width:280px" hidden></div>
+
+            {{ formfields }}
+
+            <div id="otherPlayersValues"></div> <br>
+            <p id="item_value">
+             Der Wert Ihres Gegenstands beträgt {{player.item_value_actual}} <br>
+            </p>
+
+            <button  id="bid-btn" onclick="sendBidUpdate()">
+                Bieten
+            </button>
+          </div>
+      </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ static 'scripts/cdn.plot.ly_plotly-2.20.0.min.js' }}" charset="utf-8"></script>
+
+<style>
+
+#bid-btn {
+    color: #0066CC;
+    font-weight: 800;
+    background-color: white;
+    padding: 10px 15px;
+    border: 4px solid #0066CC;
+    border-radius: 4px;
+    margin-left: 85px;
+}
+    
+#bid-btn:disabled {
+    color: #808080;
+    background-color: #C8C8C8;
+    border: 4px solid #abcdef;
+}
+    
+#countdown_statement{
+  animation: cssAnimation 0s 3s forwards;
+  visibility: visible;
+  margin-left: 45px;
+}
+
+@keyframes cssAnimation {
+  to   { visibility: hidden; }
+}
+    
+#item_value{
+    color: green;
+    font-size: 16px;
+    font-weight: 600;
+    margin-left: 70px;
+}
+
+#otherPlayersValues{
+    color: crimson;
+    font-size: 16px;
+    font-weight: 600;
+    margin-left: 60px;
+}    
+    
+.otree-body {
+    background-color: {{ Constants.style_background_color }};
+    color: {{ Constants.style_text_color }};
+}
+    
+.otree-timer {
+    display: none;
+}
+    
+.otree-title {
+    visibility: hidden;
+    height: 0;
+}
+    
+body {
+  font-family: sans-serif;
+  display: grid;
+  height: 100vh;
+  place-items: center;
+}
+
+.base-timer {
+  position: relative;
+  width: 300px;
+  height: 300px;
+}
+
+.base-timer__svg {
+  transform: scaleX(-1);
+}
+
+.base-timer__circle {
+  fill: none;
+  stroke: none;
+}
+
+.base-timer__path-elapsed {
+  stroke-width: 7px;
+  stroke: grey;
+}
+
+.base-timer__path-remaining {
+  stroke-width: 7px;
+  stroke-linecap: round;
+  transform: rotate(90deg);
+  transform-origin: center;
+  transition: 1s linear all;
+  fill-rule: nonzero;
+  stroke: currentColor;
+}
+
+.base-timer__path-remaining.green {
+  color: rgb(65, 184, 131);
+}
+
+.base-timer__path-remaining.orange {
+  color: orange;
+}
+
+.base-timer__path-remaining.red {
+  color: red;
+}
+
+.base-timer__label {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+}
+    
+#base-timer-label-2 {
+    display: block;
+    position: absolute;
+    margin-left: 55px;
+    margin-top: -10px;
+    width: 220px;
+    height: auto;
+    font-size: 36px;
+    text-align: center;
+}
+    
+.lds-ring {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+    
+.lds-ring div {
+  box-sizing: border-box;
+  display: block;
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  margin-left: 50px;
+  border: 8px solid {{Constants.animation_color}};
+  border-radius: 50%;
+  animation: lds-ring 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  border-color: {{Constants.animation_color}} transparent transparent transparent;
+}
+    
+.lds-ring div:nth-child(1) {
+  // animation-delay: -0.45s;
+  // animation-delay: -0.40s;
+}
+    
+.lds-ring div:nth-child(2) {
+  // animation-delay: -0.3s;
+  // animation-delay: -0.25s;
+}
+    
+.lds-ring div:nth-child(3) {
+  // animation-delay: -0.15s;
+  // animation-delay: -0.10s;
+}
+    
+@keyframes lds-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+</style>
+
+<script>
+//Not needed 
+document.getElementById('otherPlayersValues').style.display = 'none';
+
+let seconds_elapsed = 0; 
+const bid_decrement = 0.1;
+var bid_val = {{Constants.max_allowable_bid}} + 4*bid_decrement
+    
+// Wählen Sie das bid_amount Feld aus und entfernen Sie das required Attribut
+$("#bid_amount").removeAttr("required");
+
+
+$('.otree-timer__time-left').on('update.countdown', function (event){
+    // Decrement bid value by calculated amount each second
+    bid_val -= bid_decrement; 
+    
+    // Count seconds elapsed
+    seconds_elapsed++;
+    
+    // Set bid value
+    let actual_bid_val = bid_val.toFixed(2);
+    bid_val > {{Constants.max_allowable_bid}} ? document.getElementById("id_bid_amount").value = {{Constants.max_allowable_bid}} : document.getElementById("id_bid_amount").value = actual_bid_val;
+    
+    // Disables bid button for first 3 seconds
+    seconds_elapsed <= 3 ? document.getElementById("bid-btn").setAttribute("disabled", "disabled") : document.getElementById("bid-btn").removeAttribute("disabled");
+})     
+
+let elementList; 
+elementList = document.getElementsByClassName("mb-3 _formfield");
+for (let index=0; index < elementList.length; index++) {
+    elementList[index].setAttribute("hidden","hidden");
+}
+
+// Credit: Mateusz Rybczonec
+
+const FULL_DASH_ARRAY = 283;
+const WARNING_THRESHOLD = ({{Constants.max_allowable_bid}} / bid_decrement) / 4 ;
+const ALERT_THRESHOLD = ({{Constants.max_allowable_bid}} / bid_decrement) / 8;
+
+const COLOR_CODES = {
+  info: {
+    color: "green"
+  },
+  warning: {
+    color: "orange",
+    threshold: WARNING_THRESHOLD
+  },
+  alert: {
+    color: "red",
+    threshold: ALERT_THRESHOLD
+  }
+};
+let TIME_LIMIT = 3;
+let timePassed = 0;
+let timeLeft = TIME_LIMIT;
+let timerInterval = null;
+let remainingPathColor = COLOR_CODES.info.color;
+let isBidTimer = false;
+
+// Choose desired function for opponent's results display mode 
+if (js_vars.display_opponents_results) {
+    displayresults2();
+}
+else {
+    displayresults(1);
+}
+    
+// Do not display opponents' choices and results  
+function displayresults1(){
+    document.getElementById("otherPlayersValues").innerHTML = null;   
+} 
+    
+// Display opponents' choices and results 
+function displayresults2(){
+    let otherValues = js_vars.others_values;
+    let arrLen = otherValues.length; 
+    let otherPlayersHtml = "<p>"; 
+   
+    for (let i=0; i<arrLen; i++) {
+        otherPlayersHtml += "Opponent " + (i+1) + "'s value is €" + otherValues[i] + "<br>";
+    }
+    otherPlayersHtml += "</p>";
+    
+    document.getElementById("otherPlayersValues").innerHTML = otherPlayersHtml;     
+}    
+    
+document.getElementById("animated-timer").innerHTML = `
+<div class="base-timer">
+  <svg class="base-timer__svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <g class="base-timer__circle">
+      <circle class="base-timer__path-elapsed" cx="50" cy="50" r="45"></circle>
+      <path
+        id="base-timer-path-remaining"
+        stroke-dasharray="283"
+        class="base-timer__path-remaining ${remainingPathColor}"
+        d="
+          M 50, 50
+          m -45, 0
+          a 45,45 0 1,0 90,0
+          a 45,45 0 1,0 -90,0
+        "
+      ></path>
+    </g>
+  </svg>
+  <span id="base-timer-label" class="base-timer__label">${formatTime(
+    timeLeft
+  )}</span>
+</div>
+`;
+
+document.getElementById("second-timer").innerHTML = `
+    <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
+    <div id="base-timer-label-2">${formatTime(
+        timeLeft
+    )}</div>
+`;
+    
+// Choose desired function for timer mode 
+// startTimer3();  
+switch ({{Constants.timer_mode}}) {
+  case 1:
+    startTimer1();
+    break;
+  case 2:
+    startTimer2();
+    break;
+  case 3:
+    startTimer3();
+    break;
+    default: 
+    startTimer3();
+}
+    
+/*
+Two timer modes: 
+1. Counts down seconds (startTimer1)
+2. Counts down bid value (startTimer2)
+3. Animation plays and resets every second (startTimer3)
+*/
+
+function startTimer1() {
+    timerInterval = setInterval(() => {
+        timePassed += 1;
+        timeLeft = TIME_LIMIT - timePassed;
+        setCircleDasharray();
+        setRemainingPathColor(timeLeft);
+        document.getElementById("base-timer-label").innerHTML = formatTime(timeLeft);
+        
+        // End of pre-bidding countdown
+        if (!isBidTimer && timeLeft === 0) {
+            // Change to bid timer
+            isBidTimer = true;
+            timePassed = -1;
+            TIME_LIMIT = ({{Constants.max_allowable_bid}}) / bid_decrement; 
+        } 
+        else if (isBidTimer && timeLeft === 0) {
+            clearInterval(timerInterval);
+        } 
+      
+    /*timePassed = timePassed += 1;
+    timeLeft = TIME_LIMIT - timePassed;
+    document.getElementById("base-timer-label").innerHTML = formatTime(timeLeft);
+    setCircleDasharray();
+    setRemainingPathColor(timeLeft);*/
+     
+    /*
+    if (timeLeft === 0) {
+      onTimesUp();
+    }
+    */
+  }, 1000);
+}
+
+function startTimer2() {
+    timerInterval = setInterval(() => {
+        timePassed += 1;
+        timeLeft = TIME_LIMIT - timePassed;
+        setCircleDasharray();
+        setRemainingPathColor(timeLeft);
+        
+        if (!isBidTimer) {
+            document.getElementById("base-timer-label").innerHTML = formatTime(timeLeft);
+        } else {
+            let actual_bid_val = bid_val.toFixed(2);
+            console.log("bid value is: " + actual_bid_val);
+            document.getElementById("base-timer-label").innerHTML = `${(actual_bid_val)}` + "€";
+        }
+        
+        // End of pre-bidding countdown
+        if (!isBidTimer && timeLeft === 0) {
+            // Change to bid timer
+            isBidTimer = true;
+            timePassed = -1;
+            TIME_LIMIT = ({{Constants.max_allowable_bid}}) / bid_decrement; 
+        } 
+        else if (isBidTimer && timeLeft === 0) {
+            clearInterval(timerInterval);
+        } 
+  }, 1000);
+}
+
+function startTimer3() {
+    document.getElementById("animated-timer").setAttribute("hidden", true);
+    document.getElementById("second-timer").removeAttribute("hidden");
+    timerInterval = setInterval(() => {
+        timePassed += 1;
+        timeLeft = TIME_LIMIT - timePassed;
+         
+        if (!isBidTimer) {
+            document.getElementById("base-timer-label-2").innerHTML = formatTime(timeLeft);
+            //document.getElementById("base-timer-label").innerHTML = formatTime(timeLeft);
+        } else {
+            let actual_bid_val = bid_val.toFixed(2);
+            console.log("bid value is: " + actual_bid_val);
+            document.getElementById("base-timer-label-2").innerHTML =   `${(actual_bid_val)}` + "€";
+        }
+        
+        // End of pre-bidding countdown
+        if (!isBidTimer && timeLeft === 0) {
+            // Change to bid timer
+            isBidTimer = true;
+            timePassed = -1;
+            TIME_LIMIT = ({{Constants.max_allowable_bid}}) / bid_decrement; 
+        } 
+        else if (isBidTimer && timeLeft === 0) {
+            clearInterval(timerInterval);
+        } 
+    }, 1000);
+}
+
+function formatTime(time) {
+  const minutes = Math.floor(time / 60);
+  let seconds = time % 60;
+
+  if (seconds < 10) {
+    seconds = `0${seconds}`;
+  }
+
+  return `${minutes}:${seconds}`;
+}
+
+function setRemainingPathColor(timeLeft) {
+  const { alert, warning, info } = COLOR_CODES;
+  if (timeLeft >= warning.threshold) {
+    document
+      .getElementById("base-timer-path-remaining")
+      .classList.remove(alert.color);
+    document
+      .getElementById("base-timer-path-remaining")
+      .classList.add(info.color);
+  } else if (timeLeft <= alert.threshold) {
+    document
+      .getElementById("base-timer-path-remaining")
+      .classList.remove(warning.color);
+    document
+      .getElementById("base-timer-path-remaining")
+      .classList.add(alert.color);
+  } else if (timeLeft <= warning.threshold) {
+    document
+      .getElementById("base-timer-path-remaining")
+      .classList.remove(info.color);
+    document
+      .getElementById("base-timer-path-remaining")
+      .classList.add(warning.color);
+  }
+}
+
+function calculateTimeFraction() {
+    const rawTimeFraction = timeLeft / TIME_LIMIT;
+    return rawTimeFraction - (1 / TIME_LIMIT) * (1 - rawTimeFraction);
+}
+    
+function setCircleDasharray() {
+  const circleDasharray = `${(
+    calculateTimeFraction() * FULL_DASH_ARRAY
+  ).toFixed(0)} 283`;
+  document
+    .getElementById("base-timer-path-remaining")
+    .setAttribute("stroke-dasharray", circleDasharray);
+}
+    
+function sendBidUpdate() {
+    liveSend({'bidSubmit': true});
+    Submit();
+}
+
+    
+function liveRecv(data) {
+    // If player id doesn't match this player, submit bid of $0
+    /*let bidPlayer = data.bidder_id; 
+    let playerId = js_vars.player_id;
+    if (playerId !== bidPlayer) {
+        document.getElementById("bid_amount").value = 0;
+        Submit();*/
+    // If data is received, submit a bid of $0
+ 
+  if (data == true){
+    if (data) {
+        document.getElementById("id_bid_amount").value = 0;
+        Submit();
+    }
+  }
+}
+    
+function Submit() {
+    document.getElementById('form').submit();
+}
+</script>
+
+{% endblock %}

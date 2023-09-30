@@ -1,0 +1,160 @@
+{{ block styles }}
+    <link rel="stylesheet" src="{{ static 'otree/css/global.css' }}">
+    
+{{ endblock }}
+
+{{ block content }}
+
+<style> .page-header {padding-top:10px; margin-bottom: 10px; }</style>
+
+<div class="game-container" style="top: -10px">
+    
+    <div class="row justify-content-md-center">
+        <!-- Task -->
+        <div id="task-container" class="col-8">
+            <div class="d-flex flex-column align-items-center">
+               <h3>Szenario1</h3> 
+            
+            <div class="d-flex justify-content-center">
+                <div id="wait" style="display: none">
+                    <p>
+                        Warten auf den Mitspieler
+                    </p>
+                        <progress></progress>
+                </div>
+
+               <div id="decide" style="display: none">
+                <div id="results" style="display: none">
+                    <p>
+                        Hier sind die Ergebnisse der letzten Runden
+                    </p>
+                    <table class="table">
+                        <tr>
+                            <th>Spieler</th>
+                            <th>Entscheidung</th>
+                        </tr>
+                        <tr>
+                            <td>Sie</td>
+                            <td id="my-decision"></td>
+                        </tr>
+                        <tr>
+                            <td>Mitspieler</td>
+                            <td id="other-decision"></td>
+                        </tr>
+                    </table>
+                </div>
+            
+                <h5>
+                    Runde {{ subsession.round_number }}
+                     <span id="period"></span>
+                </h5>
+            
+                
+                {{ include_sibling 'instructions.html' }}
+                <div class="d-flex justify-content-center">
+                    
+                    <label>Bitte treffen Sie eine Entscheidung</label>
+                </div>
+                <div class="d-flex justify-content-center">
+                    
+                    
+                        <style> .wide-button { width: 25%; height: 70px; margin: 5px 75px;} </style>
+                        <button id="cooperateButton" type="button" class="btn btn-secondary btn-lg btn-block wide-button" onclick="cooperate()">
+                            Option A
+                        </button> 
+                        <button id="defectButton" type="button" class="btn btn-secondary btn-lg btn-block wide-button" onclick="defect()">
+                            Option B
+                        </button>
+                    
+                </div>
+                <br><br>
+            </div>
+
+            </div>
+        </div>
+        </div>
+        
+    </div>
+    </div>
+  </div>
+
+
+
+
+
+<script>
+    document.getElementById('period').style.display = 'none';
+    let waitDiv = document.getElementById('wait');
+    let decideDiv = document.getElementById('decide');
+    let resultsDiv = document.getElementById('results');
+    let input = document.getElementById('input');
+    let playerCells = [
+        document.getElementById('my-decision'),
+        document.getElementById('other-decision')
+    ];
+    if (js_vars.my_id === 2)
+        playerCells.reverse();
+
+    function cooperate() {
+        liveSend({'coop': true});
+    }
+
+    function defect() {
+        liveSend({'coop': false});
+    }
+
+    function show(ele) {
+        for (let div of [waitDiv, decideDiv]) {
+            div.style.display = (div === ele) ? 'block' : 'none';
+        }
+    }
+
+    function showResults(results) {
+        for (let i = 0; i < results.coops.length; i++) {
+            playerCells[i].innerText = results.coops[i] ? 'Cooperate' : 'Defect';
+        }
+        // it's only hidden in the first period
+        resultsDiv.style.display = 'block';
+        resultsDiv.style.backgroundColor = 'lightgreen';
+        setTimeout(function (event) {
+            resultsDiv.style.backgroundColor = '';
+        }, 1000);
+
+    }
+
+
+    
+    function liveRecv(data) {
+        
+        if (data.finished_sg) {
+            document.getElementById('form').submit();
+            return;
+        }
+        document.getElementById('period').innerText = data.iteration + 1;
+
+        var participant_id = {{ participant.id_in_session }};
+
+
+        if (!(data.graph)){
+            let is_waiting = data.should_wait;
+            if (is_waiting) {
+                show(waitDiv);
+            } 
+            if (!(is_waiting)) {
+                show(decideDiv);
+            }
+        }
+        
+        if (data.last_results) {
+            showResults(data.last_results);
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function (event) {
+        liveSend({'type': 'load'});
+    });
+</script>
+
+
+
+{{ endblock }}

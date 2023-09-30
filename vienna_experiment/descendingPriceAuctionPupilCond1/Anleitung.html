@@ -1,0 +1,23 @@
+{{ block title }}
+<h1>Abschnitt 2 von 3 </h1>
+{{ endblock }}
+{{ block content }}
+<br>
+<br>
+<div>
+    {% if player.id_in_group == 1 %}
+    <p>
+        Sie durchlaufen nun Szenario2 dreimal. 
+        <br>
+        <br>
+
+    </p>
+    {% else %}
+    <p>
+        Sie durchlaufen nun Szenario2 dreimal. 
+    </p>
+    {% endif %}
+</div>    
+{{ next_button }}
+
+{{ endblock }}

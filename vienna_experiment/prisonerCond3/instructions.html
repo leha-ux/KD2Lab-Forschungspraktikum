@@ -1,0 +1,37 @@
+{{ block styles }}
+    <link rel="stylesheet" src="{{ static 'otree/css/global.css' }}">
+{{ endblock }}
+
+<div class="card bg-light m-3">
+    <div class="card-body" >
+
+    <h3>
+      Szenario1 
+    </h3>
+
+
+
+    
+        <table id="matrixTable" class="table table-bordered text-center" >
+            <tr>
+              <td id="feldObenLinks"></td>
+              <th id="feldObenMitte">Mitspieler wählt Option A</th>
+              <th id="feldObenRechts">Mitspieler wählt Option B</th>
+            </tr>
+            <tr>
+              <th id="feldMitteLinks">Sie wählen Option A</th>
+              <td id="feldMitteMitte" style="height: 100px">Sie: {{ C.PAYOFFB }}, Mitspieler: {{ C.PAYOFFB }}</td>
+              <td id="feldMitteRechts" style="height: 100px">Sie: {{ C.PAYOFFD }}, Mitspieler: {{ C.PAYOFFA }}</td>
+            </tr>
+            <tr>
+              <th id="feldUntenLinks">Sie wählen Option B</th>
+              <td id="feldUntenMitte" style="height: 100px">Sie: {{ C.PAYOFFA }}, Mitspieler: {{ C.PAYOFFD }}</td>
+              <td id="feldUntenRechts" style="height: 100px">Sie: {{ C.PAYOFFC }}, Mitspieler: {{ C.PAYOFFC }}</td>
+            </tr>
+          </table>
+          
+    
+
+</div>
+</div>
+

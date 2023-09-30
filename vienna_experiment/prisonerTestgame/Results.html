@@ -1,0 +1,88 @@
+{{ block styles }}
+    <link rel="stylesheet" src="{{ static 'otree/css/global.css' }}">
+
+{{ endblock }}
+
+
+
+{{ block title }}
+
+    
+{{ endblock }}
+
+{{ block content }}
+
+<div class="row justify-content-md-center">
+    <!-- Task -->
+    <div id="task-container" class="col-8">
+        <div class="d-flex flex-column align-items-center">
+            <h3>
+                Spielergebnis 
+            </h3>  
+            <h5 style="margin-left:1.9rem!important; width:100%">
+                Beispielrunde {{ subsession.round_number }}
+                <span id="period"></span>
+            </h5>      
+            <div class="card bg-light m-3">
+                <div class="card-body" >
+                    <h4>
+                        Beispielrunde von Szenario1
+                    </h4>
+                    
+                    
+                    <div id="individualResult">
+                        {% if player.my_value == 0 %}
+                        <p>
+                            Sie haben sich für <b>Option A</b> entschieden. Es gibt daher zwei mögliche Auszahlungen in Abhängigkeit von der Entscheidung des anderen Teilnehmers in Ihrer Gruppe:
+                            <br>
+                            - Ihr Mitspieler hat <b>Option A</b> gewählt: Sie erhalten 5 Euro und Ihr Mitspieler erhält 5 Euro.
+                            <br>
+                            - Ihr Mitspieler hat <b>Option B</b> gewählt: Sie erhalten 0 Euro und Ihr Mitspieler erhält 10 Euro.
+                            <br>
+
+                        </p>
+                        {% else %}
+                        <p>
+                            Sie haben sich für <b>Option B</b> entschieden. Es gibt daher zwei mögliche Auszahlungen in Abhängigkeit von der Entscheidung des anderen Teilnehmers in Ihrer Gruppe:
+                            <br>
+                            - Ihr Mitspieler hat <b>Option A</b> gewählt: Sie erhalten 10 Euro und Ihr Mitspieler erhält 0 Euro.
+                            <br>
+                            - Ihr Mitspieler hat <b>Option B</b> gewählt: Sie erhalten 2 Euro und Ihr Mitspieler erhält 2 Euro.
+                            <br>
+                        </p>
+                        {% endif %}
+                        <div >
+                            <table id="matrixTable" class="table table-bordered text-center" >
+                                <tr>
+                                <td id="feldObenLinks"></td>
+                                <th id="feldObenMitte">Mitspieler wählt Option A</th>
+                                <th id="feldObenRechts">Mitspieler wählt Option B</th>
+                                </tr>
+                                <tr>
+                                <th id="feldMitteLinks">Sie wählen Option A</th>
+                                <td id="feldMitteMitte" style="height: 100px">Sie: {{ C.PAYOFFB }}, Mitspieler: {{ C.PAYOFFB }}</td>
+                                <td id="feldMitteRechts" style="height: 100px">Sie: {{ C.PAYOFFD }}, Mitspieler: {{ C.PAYOFFA }}</td>
+                                </tr>
+                                <tr>
+                                <th id="feldUntenLinks">Sie wählen Option B</th>
+                                <td id="feldUntenMitte" style="height: 100px">Sie: {{ C.PAYOFFA }}, Mitspieler: {{ C.PAYOFFD }}</td>
+                                <td id="feldUntenRechts" style="height: 100px">Sie: {{ C.PAYOFFC }}, Mitspieler: {{ C.PAYOFFC }}</td>
+                                </tr>
+                            </table>
+                            
+                        </div>    
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="margin-left: 1rem;">
+            {{ next_button }}
+        </div>
+    </div>
+</div>
+
+
+
+{{ endblock }}
+
+

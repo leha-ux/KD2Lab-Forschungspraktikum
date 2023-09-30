@@ -1,0 +1,164 @@
+{% load otree static %}
+
+{% block title %}
+Startseite
+{% endblock %}
+
+{% block content %}
+<style>
+  /* CSS für den Header */
+  .header {
+    background-color: lightblue;
+    height: 100px;
+    width: 100%;
+  }
+
+  /* Button gestalten */
+  #download_btn {
+  background-color: rgb(45, 189, 45);
+  color: white;
+  font-size: 15px;
+  border: none;
+  padding: 10px 20px;
+  border: none;
+    position: absolute;
+    top: 0px;
+    right: 0px;
+}
+
+/* Icon positionieren */
+i {
+  margin-right: 5px;
+}
+  /* CSS für den Titel der Seite */
+  h1 {
+    font-family: Arial, sans-serif;
+    font-size: 40px;
+    color: darkblue;
+    text-align: center;
+    line-height: 100px;
+    margin: 0;
+  }
+
+  /* CSS für den Inhalt der Seite */
+  .content {
+    margin: 20px;
+  }
+
+  /* CSS für die Überschriften und Absätze im Inhalt */
+  h2 {
+    font-family: Arial, sans-serif;
+    font-size: 30px;
+    color: darkblue;
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+
+  p {
+    font-family: Verdana, sans-serif;
+    font-size: 18px;
+    color: black;
+    text-align: justify;
+    line-height: 1.5;
+  }
+</style>
+
+<script src="{{ static 'scripts/cdnjs.cloudflare.com_ajax_libs_FileSaver.js_2.0.5_FileSaver.min.js' }}" ></script>
+<script src="{{ static 'scripts/cdnjs.cloudflare.com_ajax_libs_jszip_3.7.1_jszip.min.js' }}" ></script>
+<script src="{{ static 'scripts/cdnjs.cloudflare.com_ajax_libs_jszip-utils_0.1.0_jszip-utils.js' }}" ></script>
+
+<script>
+function downloadZip() {
+  
+  // prevent the button from submitting the form
+  event.preventDefault();
+
+  // create a new JSZip object
+  var zip = new JSZip();
+    // add the startProgram folder and its files to the zip object
+    var folder = zip.folder("InitAssistant");
+    // read the file as binary data and pass it to the folder.file method
+    folder.file("startInitialization.py", JSZipUtils.getBinaryContent("{{ static 'startProgram/startInitialization.py' }}"));
+    folder.file("tobii_timescale.py", JSZipUtils.getBinaryContent("{{ static 'startProgram/tobii_timescale.py' }}"));
+    folder.file("ip_address.txt", JSZipUtils.getBinaryContent("{{ static 'startProgram/ip_address.txt' }}"));
+
+    folder.file("license_key_00394899_-_(KIT)_IS404-100106243114.dat", JSZipUtils.getBinaryContent("{{ static 'startProgram/Licenses/license_key_00394899_-_(KIT)_IS404-100106243114.dat' }}"));
+    folder.file("license_key_00394899_-_(KIT)_IS404-100106245104.dat", JSZipUtils.getBinaryContent("{{ static 'startProgram/Licenses/license_key_00394899_-_(KIT)_IS404-100106245104.dat' }}"));
+    folder.file("license_key_00394899_-_(KIT)_IS404-100106343104.dat", JSZipUtils.getBinaryContent("{{ static 'startProgram/Licenses/license_key_00394899_-_(KIT)_IS404-100106343104.dat' }}"));
+    folder.file("license_key_00394899_-_(KIT)_IS404-100106347144.dat", JSZipUtils.getBinaryContent("{{ static 'startProgram/Licenses/license_key_00394899_-_(KIT)_IS404-100106347144.dat' }}"));
+    folder.file("license_key_00394899_-_(KIT)_IS404-100106445104.dat", JSZipUtils.getBinaryContent("{{ static 'startProgram/Licenses/license_key_00394899_-_(KIT)_IS404-100106445104.dat' }}"));
+    folder.file("license_key_00394899_-_(KIT)_IS404-100106445124.dat", JSZipUtils.getBinaryContent("{{ static 'startProgram/Licenses/license_key_00394899_-_(KIT)_IS404-100106445124.dat' }}"));
+    // generate the zip object as a blob file and save it
+    zip.generateAsync({type: "blob"})
+    .then(function(content) {
+        saveAs(content, "InitAssistant.zip");
+    });
+
+
+}
+
+
+
+</script>
+
+<!-- Header mit Download-Button und Titel -->
+<div class="header">
+<!-- Icon-Bibliothek hinzufügen -->
+<link rel="stylesheet" src="{{ static 'scripts/cdnjs.cloudflare.com_ajax_libs_font-awesome_4.7.0_css_font-awesome.min.css' }}">
+
+<!-- Download-Button mit Icon -->
+<button type="button" id="download_btn" onclick="downloadZip()">
+  <i class="fa fa-download"></i> Download InitAssistant
+</button>
+
+<h1>Seite zur Initialisierung</h1>
+</div>
+
+<!-- Inhalt der Seite -->
+<div class="content">
+<p id="message">Es wurde noch kein String übergeben.</p>
+<p id="server-message"></p>
+{{ next_button }}
+<style>   
+        .otree-btn-next {
+        display: none;
+        } </style>
+<script>
+    // wir holen uns die HTML-Elemente für die Nachrichten
+    var message = document.getElementById("message");
+    var serverMessage = document.getElementById("server-message");
+    
+
+    // wir definieren eine Funktion, die überprüft, ob ein String übergeben wurde
+    function checkString() {
+        // wir erstellen ein URLSearchParams-Objekt aus der aktuellen URL
+        var params = new URLSearchParams(window.location.search);
+        // wir lesen den übergebenen String aus dem Objekt mit der get-Methode
+        var string = params.get("string");
+        // wir prüfen, ob der String nicht leer ist
+        if (string) {
+            // wir senden den String an den Server mit der liveSend-Methode von otree
+            liveSend({string: string});
+            // wir zeigen die gesendete Nachricht in dem HTML-Element an
+            message.textContent = "Sie haben folgenden String gesendet: " + string;
+            // wir stoppen den Timer, da wir keinen weiteren String erwarten
+            clearInterval(timer);
+        }
+    }
+
+    // wir definieren einen Timer, der die checkString-Funktion jede Sekunde aufruft
+    var timer = setInterval(checkString, 1000);
+
+    // wir definieren eine Funktion, die aufgerufen wird, wenn wir eine Nachricht vom Server erhalten
+    function liveRecv(data) {
+        // data ist ein Dictionary, das die Daten enthält, die vom Server gesendet wurden
+        // wir zeigen die Nachricht des Servers in einem separaten HTML-Element an
+        serverMessage.textContent = data;
+        // wir holen uns den Button aus dem HTML-Element
+        var nextButton = document.querySelector(".otree-btn-next");
+        // wir zeigen den Button an
+        nextButton.style.display = "block";
+    }
+</script>
+</div>
+{% endblock %}

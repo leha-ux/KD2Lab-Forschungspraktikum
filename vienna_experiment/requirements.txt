@@ -1,0 +1,4 @@
+otree>=5.0.0a21
+psycopg2>=2.8.4
+Pillow~=8.0
+sentry-sdk>=0.7.9

@@ -1,0 +1,46 @@
+{{ block styles }}
+    <link rel="stylesheet" src="{{ static 'otree/css/global.css' }}">
+{{ endblock }}
+
+{{ block title }}<h1>Erklärung zu Szenario2</h1> {{ endblock }}
+{{ block content }}
+
+
+In Szenario2 gibt es einen Gegenstand der für Sie einem Wert zwischen 0 und 10 Euro hat. Sie und Ihr Mitspieler bieten gleichzeitig auf diesen Gegenstand. Der Wert, den der Gegenstand für Ihren Mitspieler hat, liegt ebenfalls zwischen 0 und 10 Euro, kann sich aber von Ihrem unterscheiden. Während des Biet-Vorgangs sehen Sie eine Uhr, die den Preis anzeigt, zu dem Sie den Gegenstand kaufen können. Der Preis fällt jede Sekunde um 10 Cent, bis Sie oder Ihr Mitspieler die Uhr anhalten und den angezeigten Preis in diesem Moment als Gebot abgeben. Der erfolgreiche Bieter gewinnt den Gegenstand und hierfür das abgegebene Gebot. 
+
+In Szenario2 kann es zu drei Ergebnissen kommen: 
+
+1.	Sie gewinnen den Gegenstand, weil Sie als erstes bieten. Ihr Bonus ergibt sich aus dem Wert, den der Gegenstand für Sie hat abzüglich Ihres Gebots. Der andere Teilnehmer in Ihrer Gruppe erhält keinen Bonus.
+2.	Ihr Mitspieler gewinnt den Gegenstand, da er zuerst bietet. Der Bonus des anderen Teilnehmers in Ihrer Gruppe ergibt sich aus dem Wert, den der Gegenstand für Ihren Mitspieler hat abzüglich seines Gebots. Sie erhalten keinen Bonus.
+3.	Sie und Ihr Mitspieler bieten gleichzeitig. Ihr Bonus berechnet sich wie folgt: 
+(Ihr Wert des Gegenstands - Ihr Gebot) /2.
+
+Denken Sie daran, dass der Bonus aus Szenario2 auch negativ sein kann, wenn Sie ein Gebot setzten, dass im Wert höher ist als Ihr Wert des Gegenstands.
+
+Dennoch ist die Gesamtauszahlung am Ende dieses Experiments nie negativ und die Gesamtauszahlung beträgt somit nie weniger als 5 Euro. Wenn Sie bereit sind, klicken Sie auf Weiter, um die Proberunde von Szenario1 zu starten.
+
+
+<p id="item_value">
+    <strong>Der Wert Ihres Gegenstandes beträgt {{player.item_value_actual}}</strong> <br>
+</p>
+
+{% next_button %}
+
+<style>
+ #item_value {
+    color: green;
+    font-size: 16px;
+}
+
+.otree-body {
+    background-color: {{ Constants.style_background_color }};
+    color: {{ Constants.style_text_color }};
+}
+
+.otree-title {
+visibility: hidden;
+height: 0;
+}
+</style>
+
+{{ endblock }}

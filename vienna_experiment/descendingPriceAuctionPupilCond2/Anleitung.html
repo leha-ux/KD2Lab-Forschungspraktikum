@@ -1,0 +1,50 @@
+{{ block title }}
+<h1>Abschnitt 1 von 3 </h1>
+{{ endblock }}
+{{ block content }}
+<br>
+<br>
+<div class="container">
+    <div class="col-md-12">
+        <div class="row">
+    {% if player.id_in_group == 2 %}
+    <div class="col-sm">
+    <p>
+        Nun durchlaufen Sie Szenario2 dreimal. <b>Dabei sehen Sie in allen drei Runden während des Entscheidungsprozesses 
+        durchgehend die Weite der Pupille der mitspielenden Person. </b>
+        Ein Beispiel dafür sehen Sie unterhalb des Textes. Ihr Mitspieler bekommt kein Ergebungslevel oder Blickdaten von Ihnen zu sehen. 
+        <br>
+        <br>
+        
+    </p>
+    </div>
+    <div class="col-sm">
+        <div class="img-container">
+            <img src="{{ static 'img/BiofeedbackPupil.png' }}">
+        </div>
+        <style>
+            .img-container {
+                position: relative;
+    
+            }
+            
+            img {
+                position: absolute;
+                top: 0;
+                left: 0;§#
+                width: 50%;
+            }
+        </style>
+    
+    </div>
+    {% else %}
+    <p>
+        Sie durchlaufen nun Szenario2 dreimal. 
+    </p>
+    {% endif %}
+  
+{{ next_button }}
+</div>
+</div>
+</div> 
+{{ endblock }}

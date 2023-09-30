@@ -1,0 +1,49 @@
+{{ block title }}
+<h1>Abschnitt 2 von 3 </h1>
+{{ endblock }}
+{{ block content }}
+<br>
+<br>
+<div class="container">
+    <div class="col-md-12">
+        <div class="row">
+    {% if player.id_in_group == 2 %}
+    <p>
+        Nun können Sie nicht mehr sehen, welche welches Erregungslevel Ihr Mitspieler hat. Durchlaufen Sie Szenario2 dreimal mit Ihrem Mitspieler.
+    </p>
+    {% else %}
+    <div class="col-sm">
+    <p>
+        Nun durchlaufen Sie Szenario2 dreimal. <b>Dabei sehen Sie in allen drei Runden während des Entscheidungsprozesses 
+        durchgehend das Erregungslevel Ihres Mitspielers.</b>
+        Ein Beispiel dafür sehen Sie unterhalb des Textes. 
+        <br>
+        <br>
+    </p>
+</div>
+<div class="col-sm">
+<div class="img-container">
+    <img src="{{ static 'img/BiofeedbackIPA.png' }}">
+</div>
+<style>
+    .img-container {
+        position: relative;
+
+    }
+    
+    img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 50%;
+    }
+</style>
+
+</div>
+    {% endif %}
+    {{ next_button }}
+</div>
+</div>
+</div>    
+
+{{ endblock }}
